@@ -1,0 +1,290 @@
+Project Name
+		src/main/java
+				1) BaseLayer Package
+				2) Page Layer Package
+				3) config Package
+				4) Test Data Package
+				5) Utils Layer Package
+		src/test/java
+				1) Test Layer Package
+	
+		src/main/resources
+		
+		DriversFolder
+		PassScreenshotFolder
+		failScreenshotFolder
+		ReportsFolder
+		pom.xml
+=============================================================
+2) Page Layer Package:
+		inside the page layer Package here we creare object repository (OR) with the help of POM Concept.
+		and their associated methods for that OR.
+=============================================
+Page Object Model (POM)
+	- Page Object Model is an object or element design pattern to create a object repositories for web elements.
+		e.g
+			Text box,radio button , button, links, images etc....
+	- We create Object repository for centralized maintainance of Object.
+	- Under this POM model, here we create container classees for element that behave like OR.
+
+e.g
+	LoginPage
+	HomePage
+	PIMPage
+	AdminPage
+
+we can create Object Respositories by using 2 Ways
+		1) POM with Page factory
+		2) POM without Page factory
+
+
+	-There is No Object Repositories in selenium WebDriver is an Programming interface.
+	- Under this POM Model for each and every web page in the application there should be corresponding 
+	page Class.
+	
+Adv of Page Object Model
+	- Reduce the Code size, reuse the Object.
+	- it is efficant and scalable
+	- centralized maintainance of Object.
+
+
+-----------------------------------------------------------------------
+2) POM without Page factory:
+
+
+package BaseLayer;
+
+import java.time.Duration;
+
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.opera.OperaDriver;
+
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+
+public class BaseClass {
+
+	protected static WebDriver driver;
+
+	public static void initlization() {
+		String browser = "chrome";
+
+		if (browser.equalsIgnoreCase("chrome")) {
+			WebDriverManager.chromedriver().setup();
+			driver = new ChromeDriver();
+		} else if (browser.equalsIgnoreCase("edge")) {
+			System.setProperty("webdriver.edge.driver", "");
+			driver = new EdgeDriver();
+		} else if (browser.equalsIgnoreCase("opera")) {
+			System.setProperty("webdriver.opera.driver", "");
+			driver = new OperaDriver();
+		} else {
+			System.err.println("Please Mention Validate browser name");
+		}
+
+		driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
+		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
+		driver.manage().window().maximize();
+		driver.manage().deleteAllCookies();
+		driver.get("https://opensource-demo.orangehrmlive.com/index.php/dashboard");
+	
+		
+	
+	}
+
+}
+
+
+package PageLayer;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+
+import BaseLayer.BaseClass;
+
+public class LoginPage extends BaseClass {
+	// POM without Page factory
+
+	private By username = By.id("txtUsername");
+	private By password = By.name("txtPassword");
+	private By loginButton = By.xpath("//input[@id='btnLogin']");
+
+	public LoginPage(WebDriver driver) {
+		this.driver = driver;
+	}
+
+	// Associated Methods for OR.
+	// Associated Methods for Username Text Box
+	// check text box is Displayed or not
+	public boolean checkDisplayedStatusOfUsername() {
+
+		return driver.findElement(username).isDisplayed();
+
+	}
+	
+
+	
+	// check text box is enabled or not
+	public boolean checkEnabledStatusOfUsername() {
+		return driver.findElement(username).isEnabled();
+	}
+
+	// Enter the value in Text box
+	public void typeValueInUsername(String value) {
+		driver.findElement(username).sendKeys(value);
+	}
+
+	// capture the entered value
+	public String captureEnteredDataInUsername() {
+		return driver.findElement(username).getAttribute("value");
+	}
+
+	// clear the text box
+	public void clearUsername() {
+		driver.findElement(username).clear();
+	}
+
+	public boolean checkDisplayedStatusOfPassword() {
+		return driver.findElement(password).isDisplayed();
+	}
+
+	public boolean checkEnabledStatusOfPassword() {
+		return driver.findElement(password).isEnabled();
+	}
+
+	public void typeValueInPassword(String value) {
+		driver.findElement(password).sendKeys(value);
+	}
+
+	public void clearPassword() {
+		driver.findElement(password).clear();
+	}
+
+	public boolean checkDisplayedStatusOfLoginButton() {
+		return driver.findElement(loginButton).isDisplayed();
+	}
+
+	public boolean checkEnabledStatusOfLoginButton() {
+		return driver.findElement(loginButton).isEnabled();
+	}
+
+	public String captureLoginButtonValue() {
+		return driver.findElement(loginButton).getAttribute("value");
+	}
+
+	public void clickOnButton() {
+		driver.findElement(loginButton).click();
+	}
+
+}
+
+
+package TestLayer;
+
+import org.testng.Assert;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import BaseLayer.BaseClass;
+import PageLayer.LoginPage;
+
+@Test(groups = "LoginPage")
+public class LoginPageTest extends BaseClass {
+
+	protected LoginPage loginpage;
+
+	@BeforeTest
+	public void setUp() {
+		BaseClass.initlization();
+		loginpage = new LoginPage(driver);
+
+	}
+
+	@Test(priority = 1)
+	public void validateDisplayedStatusofUsername() {
+		Assert.assertTrue(loginpage.checkDisplayedStatusOfUsername());
+	}
+
+	@Test(priority = 2)
+	public void validateEnabledStatusofUsername() {
+		Assert.assertTrue(loginpage.checkEnabledStatusOfUsername());
+	}
+
+	@Test(priority = 3)
+	public void enterValueInTextBoxAndValidate() {
+		loginpage.typeValueInUsername("Admin");
+		Assert.assertEquals(loginpage.captureEnteredDataInUsername(), "Admin");
+	}
+
+	@Test(priority = 4)
+	public void validateDisplayedStatusofPassword() {
+		Assert.assertTrue(loginpage.checkDisplayedStatusOfPassword());
+	}
+
+	@Test(priority = 5)
+	public void validateEnabledStatusofPassword() {
+		Assert.assertTrue(loginpage.checkEnabledStatusOfPassword());
+	}
+
+	@Test(priority = 6)
+	public void enterValueInPasswordTextBoxAndValidate() {
+		loginpage.typeValueInPassword("admin123");
+
+	}
+
+	@Test(priority = 7)
+	public void validateDisplayedStatusofLoginButton() {
+		Assert.assertTrue(loginpage.checkDisplayedStatusOfLoginButton());
+	}
+
+	@Test(priority = 8)
+	public void validateEnabledStatusofLoginButton() {
+		Assert.assertTrue(loginpage.checkEnabledStatusOfLoginButton());
+	}
+
+	@Test(priority = 9)
+	public void validateLoginButtonValue() {
+		Assert.assertEquals(loginpage.captureLoginButtonValue(), "LOGIN");
+
+	}
+
+	@Test(priority = 10)
+	public void clickonLoginButton() {
+		loginpage.clickOnButton();
+	}
+
+	@AfterTest
+	public void tearDown() {
+		driver.close();
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
